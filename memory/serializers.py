@@ -47,10 +47,11 @@ class FamilySerializer(serializers.ModelSerializer):
     feed_id_2 = serializers.IntegerField(source='second_feed_id')
     feed_id_3 = serializers.IntegerField(source='third_feed_id')
     skin = serializers.CharField(source='tree_skin')
+    water = serializers.IntegerField(source='wrt_strg')
 
     class Meta:
         model = Family
-        fields = ['id', 'exp', 'date', 'feed_id_1', 'feed_id_2', 'feed_id_3', 'skin']
+        fields = ['id', 'exp', 'date', 'feed_id_1', 'feed_id_2', 'feed_id_3', 'skin', 'water']
 
 class WaterSerializer(serializers.ModelSerializer):
     class Meta:
