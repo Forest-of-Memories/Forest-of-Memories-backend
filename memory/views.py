@@ -1,8 +1,14 @@
 # views.py
 from rest_framework import viewsets, status
 from rest_framework.response import Response
+from rest_framework.viewsets import ModelViewSet
+######### LSH ##################
 from .models import CommonQuestion, User, PersonalQuestion, Family, Memory, Feed
 from .serializers import CommonQuestionSerializer, PersonalQuestionSerializer, MemorySerializer, FeedSerializer
+######### KHS ##################
+from .models import CommonComment, PersonalComment
+
+from .serializers import CommonCommentSerializer, PersonalCommentSerializer
 
 class CommonQuestionViewSet(viewsets.ViewSet):
 
@@ -81,3 +87,11 @@ class MemoryViewSet(viewsets.ViewSet):
 class FeedViewSet(viewsets.ModelViewSet):
     queryset = Feed.objects.all()
     serializer_class = FeedSerializer
+        
+class CommonCommentViewSet(ModelViewSet):
+    queryset = CommonComment.objects.all()
+    serializer_class = CommonCommentSerializer
+
+class PersonalCommentViewSet(ModelViewSet):
+    queryset = PersonalComment.objects.all()
+    serializer_class = PersonalCommentSerializer
