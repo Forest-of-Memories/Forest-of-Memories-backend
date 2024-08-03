@@ -27,8 +27,8 @@ class User(models.Model):
     user_name = models.CharField(max_length=30)
     kakao_token = models.CharField(max_length=300)
     lst_cmn_qst_no = models.IntegerField()
-    liked_cmn_qst_no = models.CharField(max_length=255, default='')
-    liked_psn_qst_no = models.CharField(max_length=255, default='')
+    liked_cmn_qst_no = models.CharField(max_length=255, default='', null=True, blank=True)  
+    liked_psn_qst_no = models.CharField(max_length=255, default='', null=True, blank=True)
 
     def __str__(self):
         return f"{self.user_name}"
