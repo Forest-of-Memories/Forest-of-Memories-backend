@@ -100,3 +100,30 @@ class PersonalCommentViewSet(ModelViewSet):
 class ShopItemViewSet(viewsets.ModelViewSet):
     queryset = ShopItem.objects.all()
     serializer_class = ShopItemSerializer
+
+class PurchaseItemViewSet(viewsets.ViewSet):
+    def create(self, request):
+        family_id = request.data.get('family_id')
+        item_id = request.data.get('item_id')
+
+        if not family_id or not item_id:
+            return Response({"error": "Family ID and Item ID are required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            family = Family.objects.get(family_id=family_id)
+        except Family.DoesNotExist:
+            return Response({"error": "Family not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        try:
+            item = ShopItem.objects.get(item_id=item_id)
+        except ShopItem.DoesNotExist:
+            return Response({"error": "Item not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        if family.item_list:
+            family.item_list = f"{family.item_list},{item_id}"
+        else:
+            family.item_list = str(item_id)
+        
+        family.save()
+
+        return Response({"id": family_id, "item_id": item_id}, status=status.HTTP_201_CREATED)

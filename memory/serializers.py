@@ -45,3 +45,7 @@ class ShopItemSerializer(serializers.ModelSerializer):
       class Meta:
             model = ShopItem
             fields = '__all__'
+
+class PurchaseItemSerializer(serializers.ModelSerializer):
+    family_id=serializers.IntegerField()
+    item_id=serializers.IntegerField()
