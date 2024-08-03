@@ -1,8 +1,11 @@
 # views.py
 from rest_framework import viewsets, status
 from rest_framework.response import Response
+from rest_framework.viewsets import ModelViewSet
 from .models import CommonQuestion, User, PersonalQuestion
+from .models import CommonComment, PersonalComment
 from .serializers import CommonQuestionSerializer, PersonalQuestionSerializer
+from .serializers import CommonCommentSerializer, PersonalCommentSerializer
 
 class CommonQuestionViewSet(viewsets.ViewSet):
 
@@ -52,3 +55,11 @@ class PersonalQuestionViewSet(viewsets.ViewSet):
             return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+class CommonCommentViewSet(ModelViewSet):
+    queryset = CommonComment.objects.all()
+    serializer_class = CommonCommentSerializer
+
+class PersonalCommentViewSet(ModelViewSet):
+    queryset = PersonalComment.objects.all()
+    serializer_class = PersonalCommentSerializer
