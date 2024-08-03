@@ -5,7 +5,7 @@ class CommonQuestion(models.Model):
     cmn_qst_txt = models.TextField()
 
     def __str__(self):
-        return self.name
+        return f"{self.cmn_qst_no}"
 
 class Family(models.Model):
     family_id = models.IntegerField()
@@ -15,32 +15,33 @@ class Family(models.Model):
     item_list = models.CharField(max_length=100)
     cmn_qst_no = models.ForeignKey(CommonQuestion, on_delete=models.CASCADE)
     wrt_strg = models.IntegerField()
-
+    selected_feed_id = models.CharField(max_length=255, default='')
+    
     def __str__(self):
-        return self.name
+        return f"{self.family_id}"
     
 class User(models.Model):
     family = models.ForeignKey(Family, on_delete=models.CASCADE)
     user_name = models.CharField(max_length=30)
     kakao_token = models.CharField(max_length=300)
     lst_cmn_qst_no = models.IntegerField()
-    liked_cmn_qst_no = models.IntegerField()
-    liked_prsn_no = models.IntegerField()
+    liked_cmn_qst_no = models.CharField(max_length=255, default='')
+    liked_psn_qst_no = models.CharField(max_length=255, default='')
 
     def __str__(self):
-        return self.name
+        return f"{self.user_name}"
     
 class Memory(models.Model):
     family = models.ForeignKey(Family, on_delete=models.CASCADE)
     tree_start_dt = models.DateField()
     tree_end_dt = models.DateField()
-    first_feed_id = models.IntegerField()
-    second_feed_id = models.IntegerField()
-    third_feed_id = models.IntegerField()
+    first_feed_id = models.IntegerField(null=True, blank=True)
+    second_feed_id = models.IntegerField(null=True, blank=True)
+    third_feed_id = models.IntegerField(null=True, blank=True)
     tree_skin = models.CharField(max_length=100)
 
     def __str__(self):
-        return self.name
+        return f"{self.family.family_id}"
     
 class ShopItem(models.Model):
     item_id = models.IntegerField()
@@ -50,14 +51,8 @@ class ShopItem(models.Model):
     item_type = models.CharField(max_length=100)
     
     def __str__(self):
-        return self.name
+        return f"{self.item_id}"
     
-class CommonQuestion(models.Model):
-    cmn_qst_no = models.IntegerField()
-    cmn_qst_txt = models.TextField()
-
-    def __str__(self):
-        return self.name
     
 class PersonalQuestion(models.Model):
     prsn_qst_no = models.IntegerField()
@@ -65,7 +60,7 @@ class PersonalQuestion(models.Model):
     family = models.ForeignKey(Family, on_delete=models.CASCADE)
     
     def __str__(self):
-      return self.name
+      return f"{self.prsn_qst_no}"
 
 class Feed(models.Model):
     feed_id = models.IntegerField()
@@ -76,8 +71,17 @@ class Feed(models.Model):
     feed_rgst_dt = models.DateField()
 
     def __str__(self):
-        return self.name
+        return f"{self.feed_id}"
     
+class CommonComment(models.Model):
+    cmn_qst = models.ForeignKey(CommonQuestion, on_delete=models.CASCADE)
+    family = models.ForeignKey(Family, on_delete=models.CASCADE)
+    user = models.CharField(max_length=30)
+    rgst_time = models.DateTimeField()
+
+    def __str__(self):
+        return f"{self.user}"
+
 class PersonalComment(models.Model):
     prsn_qst = models.ForeignKey(PersonalQuestion, on_delete=models.CASCADE)
     user = models.CharField(max_length=30)
@@ -85,7 +89,7 @@ class PersonalComment(models.Model):
     cmt_txt = models.TextField()
 
     def __str__(self):
-        return self.name
+        return f"{self.user}"
     
 class FeedComment(models.Model):
     feed = models.ForeignKey(Feed, on_delete=models.CASCADE)
@@ -93,4 +97,4 @@ class FeedComment(models.Model):
     rgst_time = models.DateTimeField()
 
     def __str__(self):
-        return self.name
+        return f"{self.user}"
