@@ -1,14 +1,11 @@
 # views.py
 from rest_framework import viewsets, status
 from rest_framework.response import Response
+from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
-######### LSH ##################
-from .models import CommonQuestion, User, PersonalQuestion, Family, Memory, Feed, ShopItem
-from .serializers import CommonQuestionSerializer, PersonalQuestionSerializer, MemorySerializer, FeedSerializer, ShopItemSerializer
-######### KHS ##################
-from .models import CommonComment, PersonalComment
-
-from .serializers import CommonCommentSerializer, PersonalCommentSerializer
+######### ALL ##################
+from .models import *
+from .serializers import *
 
 
 from rest_framework import viewsets, status
@@ -89,13 +86,46 @@ class FeedViewSet(viewsets.ModelViewSet):
     queryset = Feed.objects.all()
     serializer_class = FeedSerializer
         
-class CommonCommentViewSet(ModelViewSet):
-    queryset = CommonComment.objects.all()
-    serializer_class = CommonCommentSerializer
+class CommonCommentList(APIView):
+
+    def get(self, request, format=None):
+        comments = CommonComment.objects.all()
+        serializer = CommonCommentSerializer(comments, many=True)
+        return Response(serializer.data)
+
+    def post(self, request, format=None):
+        serializer = CommonCommentSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class PersonalCommentViewSet(ModelViewSet):
     queryset = PersonalComment.objects.all()
     serializer_class = PersonalCommentSerializer
+
+class FamilyDetailView(APIView):
+
+    def get(self, request, format=None):
+        try:
+            family = Family.objects.get(family_id=1)  # 가정 예시로 id=1을 사용
+            serializer = FamilySerializer(family)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Family.DoesNotExist:
+            return Response({"error": "Family not found"}, status=status.HTTP_404_NOT_FOUND)
+
+class WaterUpdateView(APIView):
+
+    def post(self, request, format=None):
+        try:
+            family = Family.objects.get(family_id=1)  # 가정 예시로 family_id=1을 사용
+            serializer = WaterSerializer(family, data=request.data, partial=True)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Family.DoesNotExist:
+            return Response({"error": "Family not found"}, status=status.HTTP_404_NOT_FOUND)
 
 class ShopItemViewSet(viewsets.ModelViewSet):
     queryset = ShopItem.objects.all()
