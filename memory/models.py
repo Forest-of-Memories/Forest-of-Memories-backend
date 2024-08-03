@@ -15,6 +15,7 @@ class Family(models.Model):
     item_list = models.CharField(max_length=100)
     cmn_qst_no = models.ForeignKey(CommonQuestion, on_delete=models.CASCADE)
     wrt_strg = models.IntegerField()
+    selected_feed_id = models.CharField(max_length=255, default='')
     
     def __str__(self):
         return f"{self.family_id}"

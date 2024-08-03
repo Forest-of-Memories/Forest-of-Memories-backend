@@ -10,6 +10,6 @@ personal_question_list = PersonalQuestionViewSet.as_view({
 })
 
 urlpatterns = [
-  path('common-questions/<int:user_id>/', common_question_list),
-  path('personal-questions/<int:user_id>/', personal_question_list)
+  path('common-questions-list/<int:user_id>/', common_question_list),
+  path('personal-questions-list/<int:user_id>/', personal_question_list)
 ]
