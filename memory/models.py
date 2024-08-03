@@ -13,8 +13,11 @@ class Family(models.Model):
     tree_skin = models.CharField(max_length=100, default='', null=True, blank=True)
     tree_start_date = models.DateField()
     item_list = models.CharField(max_length=100, default='', null=True, blank=True)
+    first_feed_id = models.IntegerField(null=True, blank=True)
+    second_feed_id = models.IntegerField(null=True, blank=True)
+    third_feed_id = models.IntegerField(null=True, blank=True)
     cmn_qst_no = models.ForeignKey(CommonQuestion, on_delete=models.CASCADE)
-    wrt_strg = models.IntegerField()
+    wrt_strg = models.IntegerField(default=0)
     
     def __str__(self):
         return f"{self.family_id}"
@@ -76,19 +79,20 @@ class CommonComment(models.Model):
     cmn_qst = models.ForeignKey(CommonQuestion, on_delete=models.CASCADE)
     family = models.ForeignKey(Family, on_delete=models.CASCADE)
     user = models.CharField(max_length=30)
-    rgst_time = models.DateTimeField()
+    rgst_time = models.DateTimeField(auto_now_add=True)
+    cmt_txt = models.TextField()
 
     def __str__(self):
-        return f"{self.user}"
+        return self.cmt_txt
 
 class PersonalComment(models.Model):
     prsn_qst = models.ForeignKey(PersonalQuestion, on_delete=models.CASCADE)
     user = models.CharField(max_length=30)
-    rgst_time = models.DateTimeField()
+    rgst_time = models.DateTimeField(auto_now_add=True)
     cmt_txt = models.TextField()
 
     def __str__(self):
-        return f"{self.user}"
+        return self.text
     
 class FeedComment(models.Model):
     feed = models.ForeignKey(Feed, on_delete=models.CASCADE)
