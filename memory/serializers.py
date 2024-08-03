@@ -1,6 +1,6 @@
 from rest_framework import serializers
 ######### LSH ##################
-from .models import CommonQuestion, PersonalQuestion, Family, Feed, Memory
+from .models import CommonQuestion, PersonalQuestion, Family, Feed, Memory, ShopItem
 ######### KHS ##################
 from .models import CommonComment, PersonalComment
 
@@ -40,4 +40,8 @@ class MemorySerializer(serializers.ModelSerializer):
     class Meta:
       model = Memory
       fields = '__all__'
-  
+
+class ShopItemSerializer(serializers.ModelSerializer):
+      class Meta:
+            model = ShopItem
+            fields = '__all__'

@@ -3,8 +3,8 @@ from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 ######### LSH ##################
-from .models import CommonQuestion, User, PersonalQuestion, Family, Memory, Feed
-from .serializers import CommonQuestionSerializer, PersonalQuestionSerializer, MemorySerializer, FeedSerializer
+from .models import CommonQuestion, User, PersonalQuestion, Family, Memory, Feed, ShopItem
+from .serializers import CommonQuestionSerializer, PersonalQuestionSerializer, MemorySerializer, FeedSerializer, ShopItemSerializer
 ######### KHS ##################
 from .models import CommonComment, PersonalComment
 
@@ -83,27 +83,6 @@ class PersonalQuestionViewSet(viewsets.ReadOnlyModelViewSet):
 class MemoryViewSet(viewsets.ModelViewSet):
     queryset = Memory.objects.all()
     serializer_class = MemorySerializer
-
-    def list(self, request, *args, **kwargs):
-        user_id = request.query_params.get('user_id')
-        
-        try:
-            user = User.objects.get(id=user_id)
-            family = user.family
-            memories = Memory.objects.filter(family=family)
-            
-            serializer = self.get_serializer(memories, many=True)
-            
-            return Response({
-                'memories': serializer.data
-            }, status=status.HTTP_200_OK)
-        
-        except User.DoesNotExist:
-            return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
-        except Family.DoesNotExist:
-            return Response({"error": "Family not found"}, status=status.HTTP_404_NOT_FOUND)
-        except Exception as e:
-            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
 
 class FeedViewSet(viewsets.ModelViewSet):
@@ -117,3 +96,7 @@ class CommonCommentViewSet(ModelViewSet):
 class PersonalCommentViewSet(ModelViewSet):
     queryset = PersonalComment.objects.all()
     serializer_class = PersonalCommentSerializer
+
+class ShopItemViewSet(viewsets.ModelViewSet):
+    queryset = ShopItem.objects.all()
+    serializer_class = ShopItemSerializer
