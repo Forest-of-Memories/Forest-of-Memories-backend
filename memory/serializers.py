@@ -16,3 +16,9 @@ class FeedSerializer(serializers.ModelSerializer):
     class Meta:
       model = Feed
       fields = '__all__'
+
+class MemorySerializer(serializers.ModelSerializer):
+    class Meta:
+      model = Memory
+      fields = '__all__'
+  

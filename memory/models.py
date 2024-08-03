@@ -1,18 +1,18 @@
 from django.db import models
 
 class CommonQuestion(models.Model):
-    cmn_qst_no = models.IntegerField()
+    cmn_qst_no = models.AutoField(primary_key=True)
     cmn_qst_txt = models.TextField()
 
     def __str__(self):
         return f"{self.cmn_qst_no}"
 
 class Family(models.Model):
-    family_id = models.IntegerField()
-    tree_exp = models.IntegerField()
-    tree_skin = models.CharField(max_length=100)
+    family_id = models.AutoField(primary_key=True)
+    tree_exp = models.IntegerField(default=0)
+    tree_skin = models.CharField(max_length=100, default='', null=True, blank=True)
     tree_start_date = models.DateField()
-    item_list = models.CharField(max_length=100)
+    item_list = models.CharField(max_length=100, default='', null=True, blank=True)
     cmn_qst_no = models.ForeignKey(CommonQuestion, on_delete=models.CASCADE)
     wrt_strg = models.IntegerField()
     
@@ -43,7 +43,7 @@ class Memory(models.Model):
         return f"{self.family.family_id}"
     
 class ShopItem(models.Model):
-    item_id = models.IntegerField()
+    item_id = models.AutoField(primary_key=True)
     item_name = models.CharField(max_length=100)
     item_price = models.IntegerField()
     item_photo = models.ImageField(blank=True, upload_to='shop_items/')
@@ -54,7 +54,7 @@ class ShopItem(models.Model):
     
     
 class PersonalQuestion(models.Model):
-    prsn_qst_no = models.IntegerField()
+    prsn_qst_no = models.AutoField(primary_key=True)
     prsn_qst_txt = models.TextField()
     family = models.ForeignKey(Family, on_delete=models.CASCADE)
     
@@ -62,7 +62,7 @@ class PersonalQuestion(models.Model):
       return f"{self.prsn_qst_no}"
 
 class Feed(models.Model):
-    feed_id = models.IntegerField()
+    feed_id = models.AutoField(primary_key=True)
     family = models.ForeignKey(Family, on_delete=models.CASCADE)
     user = models.CharField(max_length=30)
     feed_img = models.ImageField(blank=True, upload_to='feeds/')
