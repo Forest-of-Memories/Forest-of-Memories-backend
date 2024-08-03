@@ -15,10 +15,7 @@ class Family(models.Model):
     item_list = models.CharField(max_length=100)
     cmn_qst_no = models.ForeignKey(CommonQuestion, on_delete=models.CASCADE)
     wrt_strg = models.IntegerField()
-    first_feed_url = models.URLField('feed_1_url', max_length=400)
-    second_feed_url = models.URLField('feed_2_url', max_length=400)
-    third_feed_url = models.URLField('feed_3_url', max_length=400)
-
+    
     def __str__(self):
         return f"{self.family_id}"
     
@@ -27,8 +24,8 @@ class User(models.Model):
     user_name = models.CharField(max_length=30)
     kakao_token = models.CharField(max_length=300)
     lst_cmn_qst_no = models.IntegerField()
-    liked_cmn_qst_no = models.IntegerField()
-    liked_prsn_no = models.IntegerField()
+    liked_cmn_qst_no = models.CharField(max_length=255, default='')
+    liked_psn_qst_no = models.CharField(max_length=255, default='')
 
     def __str__(self):
         return f"{self.user_name}"
@@ -37,9 +34,9 @@ class Memory(models.Model):
     family = models.ForeignKey(Family, on_delete=models.CASCADE)
     tree_start_dt = models.DateField()
     tree_end_dt = models.DateField()
-    first_feed_id = models.IntegerField()
-    second_feed_id = models.IntegerField()
-    third_feed_id = models.IntegerField()
+    first_feed_id = models.IntegerField(null=True, blank=True)
+    second_feed_id = models.IntegerField(null=True, blank=True)
+    third_feed_id = models.IntegerField(null=True, blank=True)
     tree_skin = models.CharField(max_length=100)
 
     def __str__(self):
