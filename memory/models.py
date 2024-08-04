@@ -78,7 +78,7 @@ class Feed(models.Model):
 class CommonComment(models.Model):
     cmn_qst = models.ForeignKey(CommonQuestion, on_delete=models.CASCADE)
     family = models.ForeignKey(Family, on_delete=models.CASCADE)
-    user = models.CharField(max_length=30)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)  # ForeignKey로 변경
     rgst_time = models.DateTimeField(auto_now_add=True)
     cmt_txt = models.TextField()
 
