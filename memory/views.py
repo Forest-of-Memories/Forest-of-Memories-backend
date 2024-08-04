@@ -45,6 +45,7 @@ class CommonQuestionViewSet(viewsets.ViewSet):
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class PersonalQuestionViewSet(viewsets.ViewSet):
+
     def list(self, request, *args, **kwargs):
         user_id = request.query_params.get('user_id')
 
@@ -58,8 +59,7 @@ class PersonalQuestionViewSet(viewsets.ViewSet):
             liked_prsn_qst_nos = user.liked_psn_qst_no.split(',') if user.liked_psn_qst_no else []
             liked_questions = PersonalQuestion.objects.filter(prsn_qst_no__in=liked_prsn_qst_nos)
 
-            # Family의 cmn_qst_no 이하의 질문들만 가져오기
-            questions = PersonalQuestion.objects.filter(prsn_qst_no__lte=family_cmn_qst_no)
+            questions = PersonalQuestion.objects.all()
             questions_data = [{"index": q.prsn_qst_no, "content": q.prsn_qst_txt} for q in questions]
             liked_questions_data = [q.prsn_qst_no for q in liked_questions]
 
