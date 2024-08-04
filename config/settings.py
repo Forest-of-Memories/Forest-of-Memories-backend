@@ -170,4 +170,5 @@ CORS_ALLOW_ALL_ORIGINS = True
 CSRF_TRUSTED_ORIGINS = [
     'http://localhost:3000',
     'http://127.0.0.1:8000',
+    'https://port-0-forest-of-memories-backend-pn2llx4kscst.sel5.cloudtype.app/',
 ]
