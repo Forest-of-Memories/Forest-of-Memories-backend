@@ -13,9 +13,9 @@ class Family(models.Model):
     tree_skin = models.CharField(max_length=100, default='', null=True, blank=True)
     tree_start_date = models.DateField()
     item_list = models.CharField(max_length=100, default='', null=True, blank=True)
-    first_feed_id = models.IntegerField(null=True, blank=True)
-    second_feed_id = models.IntegerField(null=True, blank=True)
-    third_feed_id = models.IntegerField(null=True, blank=True)
+    first_feed = models.ForeignKey('Feed', related_name='first_feed', null=True, blank=True, on_delete=models.SET_NULL)
+    second_feed = models.ForeignKey('Feed', related_name='second_feed', null=True, blank=True, on_delete=models.SET_NULL)
+    third_feed = models.ForeignKey('Feed', related_name='third_feed', null=True, blank=True, on_delete=models.SET_NULL)
     cmn_qst_no = models.ForeignKey(CommonQuestion, on_delete=models.CASCADE)
     wrt_strg = models.IntegerField(default=0)
     
@@ -66,8 +66,8 @@ class PersonalQuestion(models.Model):
 
 class Feed(models.Model):
     feed_id = models.AutoField(primary_key=True)
-    family = models.ForeignKey(Family, on_delete=models.CASCADE)
-    user = models.CharField(max_length=30)
+    family = models.ForeignKey('Family', on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     feed_img = models.ImageField(blank=True, upload_to='feeds/')
     feed_txt = models.TextField()
     feed_rgst_dt = models.DateField()
@@ -96,8 +96,9 @@ class PersonalComment(models.Model):
     
 class FeedComment(models.Model):
     feed = models.ForeignKey(Feed, on_delete=models.CASCADE)
-    user = models.CharField(max_length=30)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     rgst_time = models.DateTimeField()
+    cmt_txt = models.TextField(default="")
 
     def __str__(self):
-        return f"{self.user}"
+        return self.cmt_txt
