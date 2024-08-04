@@ -99,3 +99,15 @@ class ShopItemSerializer(serializers.ModelSerializer):
 class PurchaseItemSerializer(serializers.ModelSerializer):
     family_id=serializers.IntegerField()
     item_id=serializers.IntegerField()
+
+class CommonAnswerSerializer(serializers.ModelSerializer):
+   user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
+   class Meta:
+      model = CommonAnswer
+      fields = '__all__'
+
+class PersonalAnswerSerializer(serializers.ModelSerializer):
+   user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
+   class Meta:
+      model = PersonalAnswer
+      fields = '__all__'

@@ -1,4 +1,6 @@
 from django.db import models
+from django.contrib.auth.models import AbstractUser
+from django.utils import timezone
 
 class CommonQuestion(models.Model):
     cmn_qst_no = models.AutoField(primary_key=True)
@@ -11,27 +13,32 @@ class Family(models.Model):
     family_id = models.AutoField(primary_key=True)
     tree_exp = models.IntegerField(default=0)
     tree_skin = models.CharField(max_length=100, default='', null=True, blank=True)
-    tree_start_date = models.DateField()
+    tree_start_date = models.DateField(default=timezone.now)
     item_list = models.CharField(max_length=100, default='', null=True, blank=True)
     first_feed = models.ForeignKey('Feed', related_name='first_feed', null=True, blank=True, on_delete=models.SET_NULL)
     second_feed = models.ForeignKey('Feed', related_name='second_feed', null=True, blank=True, on_delete=models.SET_NULL)
     third_feed = models.ForeignKey('Feed', related_name='third_feed', null=True, blank=True, on_delete=models.SET_NULL)
-    cmn_qst_no = models.ForeignKey(CommonQuestion, on_delete=models.CASCADE)
+    cmn_qst_no = models.ForeignKey(CommonQuestion, on_delete=models.CASCADE, null=True, blank=True)
     wrt_strg = models.IntegerField(default=0)
     
     def __str__(self):
         return f"{self.family_id}"
+        
     
-class User(models.Model):
-    family = models.ForeignKey(Family, on_delete=models.CASCADE)
+class User(AbstractUser): 
+    family = models.ForeignKey(Family, on_delete=models.CASCADE, null=True, blank=True)
     user_name = models.CharField(max_length=30)
-    kakao_token = models.CharField(max_length=300)
-    lst_cmn_qst_no = models.IntegerField()
+    lst_cmn_qst_no = models.IntegerField(default=0)
     liked_cmn_qst_no = models.CharField(max_length=255, default='', null=True, blank=True)  
     liked_psn_qst_no = models.CharField(max_length=255, default='', null=True, blank=True)
 
     def __str__(self):
         return f"{self.user_name}"
+
+    def save(self, *args, **kwargs):
+        if not self.family:
+            self.family = Family.objects.create()
+        super().save(*args, **kwargs)
     
 class Memory(models.Model):
     family = models.ForeignKey(Family, on_delete=models.CASCADE)
@@ -102,3 +109,22 @@ class FeedComment(models.Model):
 
     def __str__(self):
         return self.cmt_txt
+    
+class CommonAnswer(models.Model):
+    cmn_qst = models.ForeignKey(CommonQuestion, on_delete=models.CASCADE)
+    family = models.ForeignKey(Family, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)  # ForeignKey로 변경
+    rgst_time = models.DateTimeField(auto_now_add=True)
+    ans_txt = models.TextField()
+
+    def __str__(self):
+        return self.ans_txt
+
+class PersonalAnswer(models.Model):
+    prsn_qst = models.ForeignKey(PersonalQuestion, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    rgst_time = models.DateTimeField(auto_now_add=True)
+    ans_txt = models.TextField()
+
+    def __str__(self):
+        return self.ans_txt

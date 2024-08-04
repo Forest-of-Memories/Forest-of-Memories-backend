@@ -8,46 +8,72 @@ from rest_framework.generics import ListAPIView
 from .models import *
 from .serializers import *
 
-
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 from .models import CommonQuestion, PersonalQuestion, User, Family
 from .serializers import CommonQuestionSerializer, PersonalQuestionSerializer
 
-class CommonQuestionViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = CommonQuestion.objects.all().order_by('cmn_qst_no')
-    serializer_class = CommonQuestionSerializer
+class CommonQuestionViewSet(viewsets.ViewSet):
+    def list(self, request, *args, **kwargs):
+        user_id = request.query_params.get('user_id')
 
-    #
+        if not user_id:
+            return Response({"error": "User ID is required"}, status=status.HTTP_400_BAD_REQUEST)
 
+        try:
+            user = User.objects.get(id=user_id)
+            family = user.family  # 사용자 패밀리 객체 가져오기
+            family_cmn_qst_no = family.cmn_qst_no.cmn_qst_no  # 패밀리의 cmn_qst_no 가져오기
+            liked_cmn_qst_nos = user.liked_cmn_qst_no.split(',') if user.liked_cmn_qst_no else []
+            liked_questions = CommonQuestion.objects.filter(cmn_qst_no__in=liked_cmn_qst_nos)
+
+            # Family의 cmn_qst_no 이하의 질문들만 가져오기
+            questions = CommonQuestion.objects.filter(cmn_qst_no__lte=family_cmn_qst_no)
+            questions_data = [{"index": q.cmn_qst_no, "content": q.cmn_qst_txt} for q in questions]
+            liked_questions_data = [q.cmn_qst_no for q in liked_questions]
+
+            return Response({
+                'questions': questions_data,
+                'likes': liked_questions_data
+            }, status=status.HTTP_200_OK)
+
+        except User.DoesNotExist:
+            return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+        except Family.DoesNotExist:
+            return Response({"error": "Family not found"}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class PersonalQuestionViewSet(viewsets.ViewSet):
-    serializer_class = PersonalQuestionSerializer
-
-    def get_queryset(self):
-        family_id = self.kwargs.get('family_id')
-        if family_id:
-            return PersonalQuestion.objects.filter(family_id=family_id)
-        return PersonalQuestion.objects.all()
-
     def list(self, request, *args, **kwargs):
-        family_id = kwargs.get('family_id')
-        if family_id:
-            try:
-                family = Family.objects.get(family_id=family_id)
-                questions = PersonalQuestion.objects.filter(family=family)
-                serializer = PersonalQuestionSerializer(questions, many=True)
-                return Response(serializer.data, status=status.HTTP_200_OK)
-            except Family.DoesNotExist:
-                return Response({"error": "Family not found"}, status=status.HTTP_404_NOT_FOUND)
-        else:
-            queryset = self.get_queryset()
-            serializer = PersonalQuestionSerializer(queryset, many=True)
-            return Response(serializer.data)
+        user_id = request.query_params.get('user_id')
 
-    def retrieve(self, request, *args, **kwargs):
-        return Response({"error": "Method not allowed."}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
-    
+        if not user_id:
+            return Response({"error": "User ID is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            user = User.objects.get(id=user_id)
+            family = user.family  # 사용자 패밀리 객체 가져오기
+            family_cmn_qst_no = family.cmn_qst_no.cmn_qst_no  # 패밀리의 cmn_qst_no 가져오기
+            liked_prsn_qst_nos = user.liked_psn_qst_no.split(',') if user.liked_psn_qst_no else []
+            liked_questions = PersonalQuestion.objects.filter(prsn_qst_no__in=liked_prsn_qst_nos)
+
+            # Family의 cmn_qst_no 이하의 질문들만 가져오기
+            questions = PersonalQuestion.objects.filter(prsn_qst_no__lte=family_cmn_qst_no)
+            questions_data = [{"index": q.prsn_qst_no, "content": q.prsn_qst_txt} for q in questions]
+            liked_questions_data = [q.prsn_qst_no for q in liked_questions]
+
+            return Response({
+                'questions': questions_data,
+                'likes': liked_questions_data
+            }, status=status.HTTP_200_OK)
+
+        except User.DoesNotExist:
+            return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+        except Family.DoesNotExist:
+            return Response({"error": "Family not found"}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class MemoryViewSet(viewsets.ModelViewSet):
     queryset = Memory.objects.all()
@@ -200,3 +226,56 @@ class PurchaseItemViewSet(viewsets.ViewSet):
         family.save()
 
         return Response({"id": family_id, "item_id": item_id}, status=status.HTTP_201_CREATED)
+
+class CommonAnswerList(APIView):
+
+    def get(self, request, family_id, format=None):
+        try:
+            family = Family.objects.get(family_id=family_id)
+            comments = CommonAnswer.objects.filter(family=family)
+            serializer = CommonAnswerSerializer(comments, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Family.DoesNotExist:
+            return Response({"error": "Family not found"}, status=status.HTTP_404_NOT_FOUND)
+        except CommonAnswer.DoesNotExist:
+            return Response({"error": "Answer not found"}, status=status.HTTP_404_NOT_FOUND)
+
+    def post(self, request, format=None):
+        try:
+            user_id = request.data.get('user')
+            if not user_id:
+                return Response({"error": "User ID is required"}, status=status.HTTP_400_BAD_REQUEST)
+            
+            user = User.objects.get(id=user_id)
+            request.data['user'] = user.id  # Ensure the user ID is correctly set
+            
+            serializer = CommonAnswerSerializer(data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except User.DoesNotExist:
+            return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+
+class PersonalAnswerList(APIView):
+    def get(self, request, family_id, format=None):
+        try:
+            family = Family.objects.get(family_id=family_id)
+            comments = PersonalAnswer.objects.filter(prsn_qst__family=family)
+            serializer = PersonalAnswerSerializer(comments, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Family.DoesNotExist:
+            return Response({"error": "Family not found"}, status=status.HTTP_404_NOT_FOUND)
+
+    def post(self, request, family_id, format=None):
+        try:
+            family = Family.objects.get(family_id=family_id)
+            request.data['prsn_qst'] = family.cmn_qst_no.cmn_qst_no
+            request.data['family'] = family_id
+            serializer = PersonalAnswerSerializer(data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Family.DoesNotExist:
+            return Response({"error": "Family not found"}, status=status.HTTP_404_NOT_FOUND)

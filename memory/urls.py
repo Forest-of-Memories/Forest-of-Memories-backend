@@ -33,4 +33,6 @@ urlpatterns = [
     path('home/<int:family_id>/water/', WaterUpdateView.as_view(), name='water-update'),
     path('feed/', FeedViewSet.as_view({'get': 'list', 'post': 'create'})),
     path('feed/<int:feed_id>/', FeedViewSet.as_view({'get': 'retrieve', 'put':'update', 'patch': 'partial_update', 'delete': 'destroy'})),
+    path('common-questions/<int:family_id>/commonanswer/', CommonAnswerList.as_view(), name='commonanswer-list'),
+    path('personal-questions/<int:family_id>/personalanswer/', PersonalAnswerList.as_view(), name='personalanswer-list'),
 ]
