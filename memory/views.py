@@ -57,6 +57,7 @@ class MemoryViewSet(viewsets.ModelViewSet):
 class FeedViewSet(viewsets.ModelViewSet):
     queryset = Feed.objects.all()
     serializer_class = FeedSerializer
+    lookup_field = 'feed_id'
         
 class CommonCommentList(APIView):
 
