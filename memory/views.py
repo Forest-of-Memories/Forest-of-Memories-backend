@@ -15,67 +15,65 @@ from .models import CommonQuestion, PersonalQuestion, User, Family
 from .serializers import CommonQuestionSerializer, PersonalQuestionSerializer
 
 class CommonQuestionViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = CommonQuestion.objects.all()
+    queryset = CommonQuestion.objects.all().order_by('cmn_qst_no')
     serializer_class = CommonQuestionSerializer
 
-    def list(self, request):
-        family_id = request.query_params.get('family_id')
-        liked_questions = []
+    # def list(self, request):
+    #     family_id = request.query_params.get('family_id')
+    #     liked_questions = []
 
-        if not family_id:
-            return Response({"error": "Family ID is required"}, status=status.HTTP_400_BAD_REQUEST)
+    #     if not family_id:
+    #         return Response({"error": "Family ID is required"}, status=status.HTTP_400_BAD_REQUEST)
         
-        try:
-            family = Family.objects.get(family_id=family_id)
-        except Family.DoesNotExist:
-            return Response({"error": "Family not found"}, status=status.HTTP_404_NOT_FOUND)
+    #     try:
+    #         family = Family.objects.get(family_id=family_id)
+    #     except Family.DoesNotExist:
+    #         return Response({"error": "Family not found"}, status=status.HTTP_404_NOT_FOUND)
         
-        users = User.objects.filter(family=family)
-        if users.exists():
-            liked_questions = [
-                int(q) for user in users
-                if user.liked_cmn_qst_no for q in user.liked_cmn_qst_no.split(',')
-            ]
+    #     users = User.objects.filter(family=family)
+    #     if users.exists():
+    #         liked_questions = [
+    #             int(q) for user in users
+    #             if user.liked_cmn_qst_no for q in user.liked_cmn_qst_no.split(',')
+    #         ]
 
-        cmn_qst_no = family.cmn_qst_no.cmn_qst_no
-        questions = CommonQuestion.objects.filter(cmn_qst_no__lte=cmn_qst_no)
-        serializer = CommonQuestionSerializer(questions, many=True)
+    #     cmn_qst_no = family.cmn_qst_no.cmn_qst_no
+    #     questions = CommonQuestion.objects.filter(cmn_qst_no__lte=cmn_qst_no)
+    #     serializer = CommonQuestionSerializer(questions, many=True)
 
-        response_data = {
-            "questions": [{"index": q['cmn_qst_no'], "content": q['cmn_qst_txt']} for q in serializer.data],
-            "likes": liked_questions
-        }
-        return Response(response_data)
+    #     response_data = {
+    #         "questions": [{"index": q['cmn_qst_no'], "content": q['cmn_qst_txt']} for q in serializer.data],
+    #         "likes": liked_questions
+    #     }
+    #     return Response(response_data)
 
 
-class PersonalQuestionViewSet(viewsets.ReadOnlyModelViewSet):
+class PersonalQuestionViewSet(viewsets.ViewSet):
     serializer_class = PersonalQuestionSerializer
 
-    def list(self, request):
-        family_id = request.query_params.get('family_id')
-        liked_questions = []
+    def get_queryset(self):
+        family_id = self.kwargs.get('family_id')
+        if family_id:
+            return PersonalQuestion.objects.filter(family_id=family_id)
+        return PersonalQuestion.objects.all()
 
-        if not family_id:
-            return Response({"error": "Family ID is required"}, status=status.HTTP_400_BAD_REQUEST)
+    def list(self, request, *args, **kwargs):
+        family_id = kwargs.get('family_id')
+        if family_id:
+            try:
+                family = Family.objects.get(family_id=family_id)
+                questions = PersonalQuestion.objects.filter(family=family)
+                serializer = PersonalQuestionSerializer(questions, many=True)
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            except Family.DoesNotExist:
+                return Response({"error": "Family not found"}, status=status.HTTP_404_NOT_FOUND)
+        else:
+            queryset = self.get_queryset()
+            serializer = PersonalQuestionSerializer(queryset, many=True)
+            return Response(serializer.data)
 
-        try:
-            family = Family.objects.get(family_id=family_id)
-            users = User.objects.filter(family=family)
-            liked_questions = [
-                int(q) for user in users
-                if user.liked_psn_qst_no for q in user.liked_psn_qst_no.split(',')
-            ]
-        except Family.DoesNotExist:
-            return Response({"error": "Family not found"}, status=status.HTTP_404_NOT_FOUND)
-
-        questions = PersonalQuestion.objects.filter(family=family)
-        serializer = PersonalQuestionSerializer(questions, many=True)
-
-        response_data = {
-            "questions": [{"index": q['prsn_qst_no'], "content": q['prsn_qst_txt']} for q in serializer.data],
-            "likes": liked_questions
-        }
-        return Response(response_data)
+    def retrieve(self, request, *args, **kwargs):
+        return Response({"error": "Method not allowed."}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
     
 
 class MemoryViewSet(viewsets.ModelViewSet):
@@ -113,9 +111,29 @@ class CommonCommentList(APIView):
         except Family.DoesNotExist:
             return Response({"error": "Family not found"}, status=status.HTTP_404_NOT_FOUND)
 
-class PersonalCommentViewSet(ModelViewSet):
-    queryset = PersonalComment.objects.all()
-    serializer_class = PersonalCommentSerializer
+class PersonalCommentList(APIView):
+
+    def get(self, request, family_id, format=None):
+        try:
+            family = Family.objects.get(family_id=family_id)
+            comments = PersonalComment.objects.filter(prsn_qst__family=family)
+            serializer = PersonalCommentSerializer(comments, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Family.DoesNotExist:
+            return Response({"error": "Family not found"}, status=status.HTTP_404_NOT_FOUND)
+
+    def post(self, request, family_id, format=None):
+        try:
+            family = Family.objects.get(family_id=family_id)
+            request.data['prsn_qst'] = family.cmn_qst_no.cmn_qst_no
+            request.data['family'] = family_id
+            serializer = PersonalCommentSerializer(data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Family.DoesNotExist:
+            return Response({"error": "Family not found"}, status=status.HTTP_404_NOT_FOUND)
 
 class FamilyListView(ListAPIView):
     queryset = Family.objects.all()
