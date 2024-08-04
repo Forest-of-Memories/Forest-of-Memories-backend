@@ -98,7 +98,7 @@ class CommonCommentList(APIView):
         except CommonComment.DoesNotExist:
             return Response({"error": "Comments not found"}, status=status.HTTP_404_NOT_FOUND)
 
-    def post(self, request, format=None):
+    def post(self, request, family_id, format=None):
         try:
             user_id = request.data.get('user')
             if not user_id:
@@ -240,7 +240,7 @@ class CommonAnswerList(APIView):
         except CommonAnswer.DoesNotExist:
             return Response({"error": "Answer not found"}, status=status.HTTP_404_NOT_FOUND)
 
-    def post(self, request, format=None):
+    def post(self, request, family_id, format=None):
         try:
             user_id = request.data.get('user')
             if not user_id:
