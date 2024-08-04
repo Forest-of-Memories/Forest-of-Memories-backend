@@ -18,34 +18,7 @@ class CommonQuestionViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = CommonQuestion.objects.all().order_by('cmn_qst_no')
     serializer_class = CommonQuestionSerializer
 
-    # def list(self, request):
-    #     family_id = request.query_params.get('family_id')
-    #     liked_questions = []
-
-    #     if not family_id:
-    #         return Response({"error": "Family ID is required"}, status=status.HTTP_400_BAD_REQUEST)
-        
-    #     try:
-    #         family = Family.objects.get(family_id=family_id)
-    #     except Family.DoesNotExist:
-    #         return Response({"error": "Family not found"}, status=status.HTTP_404_NOT_FOUND)
-        
-    #     users = User.objects.filter(family=family)
-    #     if users.exists():
-    #         liked_questions = [
-    #             int(q) for user in users
-    #             if user.liked_cmn_qst_no for q in user.liked_cmn_qst_no.split(',')
-    #         ]
-
-    #     cmn_qst_no = family.cmn_qst_no.cmn_qst_no
-    #     questions = CommonQuestion.objects.filter(cmn_qst_no__lte=cmn_qst_no)
-    #     serializer = CommonQuestionSerializer(questions, many=True)
-
-    #     response_data = {
-    #         "questions": [{"index": q['cmn_qst_no'], "content": q['cmn_qst_txt']} for q in serializer.data],
-    #         "likes": liked_questions
-    #     }
-    #     return Response(response_data)
+    #
 
 
 class PersonalQuestionViewSet(viewsets.ViewSet):
@@ -98,18 +71,22 @@ class CommonCommentList(APIView):
         except CommonComment.DoesNotExist:
             return Response({"error": "Comments not found"}, status=status.HTTP_404_NOT_FOUND)
 
-    def post(self, request, family_id, format=None):
+    def post(self, request, format=None):
         try:
-            family = Family.objects.get(family_id=family_id)
-            request.data['cmn_qst'] = family.cmn_qst_no.cmn_qst_no
-            request.data['family'] = family_id
+            user_id = request.data.get('user')
+            if not user_id:
+                return Response({"error": "User ID is required"}, status=status.HTTP_400_BAD_REQUEST)
+            
+            user = User.objects.get(id=user_id)
+            request.data['user'] = user.id  # Ensure the user ID is correctly set
+            
             serializer = CommonCommentSerializer(data=request.data)
             if serializer.is_valid():
                 serializer.save()
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        except Family.DoesNotExist:
-            return Response({"error": "Family not found"}, status=status.HTTP_404_NOT_FOUND)
+        except User.DoesNotExist:
+            return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
 
 class PersonalCommentList(APIView):
 
@@ -149,8 +126,38 @@ class FamilyDetailView(APIView):
         except Family.DoesNotExist:
             return Response({"error": "Family not found"}, status=status.HTTP_404_NOT_FOUND)
 
+class FeedUpdateView(APIView):
+
+    def get(self, request, family_id, format=None):
+        try:
+            family = Family.objects.get(family_id=family_id)
+            serializer = FeedUpdateSerializer(family)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Family.DoesNotExist:
+            return Response({"error": "Family not found"}, status=status.HTTP_404_NOT_FOUND)
+    
+    def patch(self, request, family_id, format=None):
+        try:
+            family = Family.objects.get(family_id=family_id)
+            serializer = FeedUpdateSerializer(family, data=request.data, partial=True)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Family.DoesNotExist:
+            return Response({"error": "Family not found"}, status=status.HTTP_404_NOT_FOUND)
+        
+
 class WaterUpdateView(APIView):
 
+    def get(self, request, family_id, format=None):
+        try:
+            family = Family.objects.get(family_id=family_id)  # URL에서 받은 family_id 사용
+            serializer = WaterSerializer(family)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Family.DoesNotExist:
+            return Response({"error": "Family not found"}, status=status.HTTP_404_NOT_FOUND)
+    
     def post(self, request, family_id, format=None):
         try:
             family = Family.objects.get(family_id=family_id)  # URL에서 받은 family_id 사용
