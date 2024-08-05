@@ -15,13 +15,13 @@ from .serializers import CommonQuestionSerializer, PersonalQuestionSerializer
 
 class CommonQuestionViewSet(viewsets.ViewSet):
     def list(self, request, *args, **kwargs):
-        user_id = request.query_params.get('user_id')
+        user_name = request.query_params.get('user_name')
 
-        if not user_id:
-            return Response({"error": "User ID is required"}, status=status.HTTP_400_BAD_REQUEST)
+        if not user_name:
+            return Response({"error": "User name is required"}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            user = User.objects.get(id=user_id)
+            user = User.objects.get(user_name=user_name)
             family = user.family  # 사용자 패밀리 객체 가져오기
             family_cmn_qst_no = family.cmn_qst_no.cmn_qst_no  # 패밀리의 cmn_qst_no 가져오기
             liked_cmn_qst_nos = user.liked_cmn_qst_no.split(',') if user.liked_cmn_qst_no else []
@@ -47,15 +47,15 @@ class CommonQuestionViewSet(viewsets.ViewSet):
 class PersonalQuestionViewSet(viewsets.ViewSet):
 
     def list(self, request, *args, **kwargs):
-        user_id = request.query_params.get('user_id')
+        user_name = request.query_params.get('user_name')
 
-        if not user_id:
+        if not user_name:
             return Response({"error": "User ID is required"}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            user = User.objects.get(id=user_id)
+            user = User.objects.get(user_name=user_name)
             family = user.family  # 사용자 패밀리 객체 가져오기
-            family_cmn_qst_no = family.cmn_qst_no.cmn_qst_no  # 패밀리의 cmn_qst_no 가져오기
+            # family_prsn_qst_no = family.prsn_qst_no.prsn_qst_no  # 패밀리의 prsn_qst_no 가져오기
             liked_prsn_qst_nos = user.liked_psn_qst_no.split(',') if user.liked_psn_qst_no else []
             liked_questions = PersonalQuestion.objects.filter(prsn_qst_no__in=liked_prsn_qst_nos)
 
@@ -100,12 +100,12 @@ class CommonCommentList(APIView):
 
     def post(self, request, family_id, format=None):
         try:
-            user_id = request.data.get('user')
-            if not user_id:
+            user_name = request.data.get('user')
+            if not user_name:
                 return Response({"error": "User ID is required"}, status=status.HTTP_400_BAD_REQUEST)
             
-            user = User.objects.get(id=user_id)
-            request.data['user'] = user.id  # Ensure the user ID is correctly set
+            user = User.objects.get(user_name=user_name)
+            request.data['user'] = user.user_name  # Ensure the user ID is correctly set
             
             serializer = CommonCommentSerializer(data=request.data)
             if serializer.is_valid():
@@ -128,9 +128,9 @@ class PersonalCommentList(APIView):
 
     def post(self, request, family_id, format=None):
         try:
-            family = Family.objects.get(family_id=family_id)
-            request.data['prsn_qst'] = family.cmn_qst_no.cmn_qst_no
-            request.data['family'] = family_id
+            # family = Family.objects.get(family_id=family_id)
+            # prsn_qest_no = request.data.get('prsn_qst_no')
+            # request.data['family'] = family_id
             serializer = PersonalCommentSerializer(data=request.data)
             if serializer.is_valid():
                 serializer.save()
@@ -242,12 +242,12 @@ class CommonAnswerList(APIView):
 
     def post(self, request, family_id, format=None):
         try:
-            user_id = request.data.get('user')
-            if not user_id:
+            user_name = request.data.get('user')
+            if not user_name:
                 return Response({"error": "User ID is required"}, status=status.HTTP_400_BAD_REQUEST)
             
-            user = User.objects.get(id=user_id)
-            request.data['user'] = user.id  # Ensure the user ID is correctly set
+            user = User.objects.get(user_name=user_name)
+            request.data['user'] = user.user_name  # Ensure the user ID is correctly set
             
             serializer = CommonAnswerSerializer(data=request.data)
             if serializer.is_valid():
@@ -269,9 +269,9 @@ class PersonalAnswerList(APIView):
 
     def post(self, request, family_id, format=None):
         try:
-            family = Family.objects.get(family_id=family_id)
-            request.data['prsn_qst'] = family.cmn_qst_no.cmn_qst_no
-            request.data['family'] = family_id
+            # family = Family.objects.get(family_id=family_id)
+            # request.data['prsn_qst'] = family.cmn_qst_no.cmn_qst_no
+            # request.data['family'] = family_id
             serializer = PersonalAnswerSerializer(data=request.data)
             if serializer.is_valid():
                 serializer.save()

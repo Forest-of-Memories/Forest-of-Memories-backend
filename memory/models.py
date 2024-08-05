@@ -27,7 +27,7 @@ class Family(models.Model):
     
 class User(AbstractUser): 
     family = models.ForeignKey(Family, on_delete=models.CASCADE, null=True, blank=True)
-    user_name = models.CharField(max_length=30)
+    user_name = models.CharField(primary_key=True, max_length=30)
     lst_cmn_qst_no = models.IntegerField(default=0)
     liked_cmn_qst_no = models.CharField(max_length=255, default='', null=True, blank=True)  
     liked_psn_qst_no = models.CharField(max_length=255, default='', null=True, blank=True)
