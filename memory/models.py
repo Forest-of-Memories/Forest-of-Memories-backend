@@ -54,10 +54,10 @@ class Memory(models.Model):
     
 class ShopItem(models.Model):
     item_id = models.AutoField(primary_key=True)
-    item_name = models.CharField(max_length=100)
+    item_name = models.CharField(max_length=50)
     item_price = models.IntegerField()
     item_photo = models.ImageField(blank=True, upload_to='shop_items/')
-    item_type = models.CharField(max_length=100)
+    item_type = models.CharField(max_length=50)
     
     def __str__(self):
         return f"{self.item_id}"
