@@ -27,7 +27,7 @@ urlpatterns = [
     path('', include(router.urls)),
     
     path('common-questions/<int:family_id>/commoncomment/', CommonCommentList.as_view(), name='commoncomment-list'),
-
+    path('google-login/', GoogleLoginAPIView.as_view(), name='google-login'),
     path('personal-questions/<int:family_id>/personalcomment/', PersonalCommentList.as_view(), name='personalcomment-list'),
     path('home/', FamilyListView.as_view(), name='family-list'),
     path('home/<int:family_id>/', FamilyDetailView.as_view(), name='family-detail'),
