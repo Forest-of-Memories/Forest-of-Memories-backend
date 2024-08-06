@@ -2,6 +2,11 @@ from rest_framework import serializers
 ######### ALL ##################
 from .models import *
 
+class GoogleUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['user_name', 'user_id', 'email']
+
 # 공통 질문
 class CommonQuestionSerializer(serializers.ModelSerializer):
     class Meta:

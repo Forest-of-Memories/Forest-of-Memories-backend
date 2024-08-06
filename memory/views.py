@@ -1,6 +1,7 @@
 # views.py
 from rest_framework import viewsets, status
 from rest_framework.response import Response
+from rest_framework.decorators import action
 from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.generics import ListAPIView
@@ -12,6 +13,23 @@ from rest_framework import viewsets, status
 from rest_framework.response import Response
 from .models import CommonQuestion, PersonalQuestion, User, Family
 from .serializers import CommonQuestionSerializer, PersonalQuestionSerializer
+
+class GoogleLoginAPIView(APIView):
+    def post(self, request, *args, **kwargs):
+        serializer = GoogleUserSerializer(data=request.data)
+        if serializer.is_valid():
+            user_id = serializer.validated_data.get('user_id')
+            email = serializer.validated_data.get('email')
+
+            if User.objects.filter(user_id=user_id).exists():
+                return Response({"error": "User with this user_id already exists"}, status=status.HTTP_400_BAD_REQUEST)
+            
+            if User.objects.filter(email=email).exists():
+                return Response({"error": "User with this email already exists"}, status=status.HTTP_400_BAD_REQUEST)
+
+            user = serializer.save()
+            return Response({"message": "User created successfully", "user": GoogleUserSerializer(user).data}, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class CommonQuestionViewSet(viewsets.ViewSet):
     def list(self, request, *args, **kwargs):
@@ -215,8 +233,13 @@ class PurchaseItemViewSet(viewsets.ViewSet):
 
         try:
             item = ShopItem.objects.get(item_id=item_id)
+            if item.is_purchased:
+                return Response({"error": "Item already purchased"}, status=status.HTTP_400_BAD_REQUEST)
         except ShopItem.DoesNotExist:
             return Response({"error": "Item not found"}, status=status.HTTP_404_NOT_FOUND)
+        
+        item.is_purchased = True
+        item.save()
 
         if family.item_list:
             family.item_list = f"{family.item_list},{item_id}"
