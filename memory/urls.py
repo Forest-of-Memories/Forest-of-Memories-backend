@@ -11,7 +11,7 @@ from rest_framework.routers import DefaultRouter
 #     'get': 'list'
 # })
 
-# .gitignore
+# .gitignore z
 
 router = DefaultRouter()
 
